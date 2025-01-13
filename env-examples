@@ -1,2 +1,2 @@
-DB_URL - Full database url path
-PORT - The server port
+DB_URL=postgresql://username:password@localhost:5432/dbname
+PORT=5001
