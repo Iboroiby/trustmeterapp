@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from datetime import timedelta
 from app.services.user_service import user_service
+from app.utils.auth import create_access_token
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -24,15 +25,15 @@ def register(
     # Create user account
     user = user_service.create(db=db, schema=user_schema)
 
-    # Create access and refresh tokens
-    # access_token = user_service.create_access_token(user_id=user.id)
+    # Create access tokens
+    access_token = create_access_token(user_id=str(user.id))
 
     response = JSONResponse(
         status_code=201,
         content={
             "status_code": 201,
             "message": "User created successfully",
-            "access_token": "access_token",
+            "access_token": access_token,
             "refresh_token": "refresh_token",
             "data": jsonable_encoder(
                     user, 
@@ -44,7 +45,7 @@ def register(
     # Add token to cookies
     response.set_cookie(
         key="access_token",
-        value='access_token',
+        value=access_token,
         expires=timedelta(days=60),
         httponly=True,
         secure=True,
@@ -62,15 +63,15 @@ def login(login_schema: LoginUserInput, request: Request, db: Session = Depends(
     user = user_service.login_user(
         db=db, schema=login_schema)
 
-    # Generate access and refresh tokens
-    # access_token = user_service.create_access_token(user_id=user.id)
+    # Generate access tokens
+    access_token = create_access_token(user_id=str(user.id))
 
     response = JSONResponse(
         status_code=201,
         content={
             "status_code": 201,
             "message": "User loggedin successfully",
-            "access_token": "access_token",
+            "access_token": access_token,
             "refresh_token": "refresh_token",
             "data": jsonable_encoder(
                     user, 
@@ -81,8 +82,8 @@ def login(login_schema: LoginUserInput, request: Request, db: Session = Depends(
 
     # Add access token to cookies
     response.set_cookie(
-        key="refresh_token",
-        value="access_token",
+        key="acess_token",
+        value=access_token,
         expires=timedelta(days=30),
         httponly=True,
         secure=True,
