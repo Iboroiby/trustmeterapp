@@ -26,7 +26,7 @@ class UserService:
         user = db.query(User).filter(User.email == schema.email).first()
         if not user:
             raise HTTPException(
-                status_code=404,
+                status_code=400,
                 detail="Incorrect email or password",
             )
         if not verify_password(plain_password=schema.password, hashed_password=user.password):
