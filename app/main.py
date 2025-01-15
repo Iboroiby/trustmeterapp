@@ -1,5 +1,5 @@
- # app/main.py
 from fastapi import FastAPI
+from app.api.routes import users
 import uvicorn
 from app.utils.settings import settings
 from app.api.routes import api_router
