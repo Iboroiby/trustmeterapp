@@ -6,9 +6,12 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from datetime import timedelta
 from app.services.user_service import user_service
-from app.utils.auth import create_access_token
+from app.utils.auth import create_access_token, verify_access_token
+
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
 
 @auth.post(
     "/register",
@@ -16,7 +19,6 @@ auth = APIRouter(prefix="/auth", tags=["Authentication"])
     response_model=RegisteredUserResponse,
 )
 def register(
-    request: Request,
     user_schema: RegisterUserInput,
     db: Session = Depends(get_db),
 ):
@@ -34,7 +36,6 @@ def register(
             "status_code": 201,
             "message": "User created successfully",
             "access_token": access_token,
-            "refresh_token": "refresh_token",
             "data": jsonable_encoder(
                     user, 
                     exclude=["password", "is_deleted", "updated_at"]
@@ -67,12 +68,11 @@ def login(login_schema: LoginUserInput, request: Request, db: Session = Depends(
     access_token = create_access_token(user_id=str(user.id))
 
     response = JSONResponse(
-        status_code=201,
+        status_code=200,
         content={
-            "status_code": 201,
+            "status_code": 200,
             "message": "User loggedin successfully",
             "access_token": access_token,
-            "refresh_token": "refresh_token",
             "data": jsonable_encoder(
                     user, 
                     exclude=["password", "is_deleted", "updated_at"]
@@ -91,3 +91,21 @@ def login(login_schema: LoginUserInput, request: Request, db: Session = Depends(
     )
 
     return response
+
+@auth.get("/me", status_code=status.HTTP_200_OK)
+def get_current_user(
+    current_user: dict = Depends(verify_access_token),
+):
+    """Endpoint to get current user details"""
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status_code": 200,
+            "message": "User fetched successfully",
+            "data": jsonable_encoder(
+                    current_user, 
+                    exclude=["password", "is_deleted", "updated_at"]
+                )
+        },
+    )
