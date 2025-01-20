@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Request, status, BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 from app.schemas.user import RegisteredUserResponse, RegisterUserInput, LoginUserInput
 from fastapi.responses import JSONResponse
@@ -7,7 +7,7 @@ from app.db.database import get_db
 from datetime import timedelta
 from app.services.user_service import user_service
 from app.utils.auth import create_access_token, verify_access_token
-
+from app.utils.background_task import send_email_in_background
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -19,6 +19,7 @@ auth = APIRouter(prefix="/auth", tags=["Authentication"])
     response_model=RegisteredUserResponse,
 )
 def register(
+    background_tasks: BackgroundTasks,
     user_schema: RegisterUserInput,
     db: Session = Depends(get_db),
 ):
@@ -29,6 +30,14 @@ def register(
 
     # Create access tokens
     access_token = create_access_token(user_id=str(user.id))
+
+    send_email_in_background(
+        background_tasks,
+        subject="Welcome to Our App!",
+        recipients=[user.email],
+        template_name="welcome.html",
+        template_context={"name": user.name}
+    )
 
     response = JSONResponse(
         status_code=201,
@@ -64,7 +73,6 @@ def login(login_schema: LoginUserInput, request: Request, db: Session = Depends(
     user = user_service.login_user(
         db=db, schema=login_schema)
 
-    # Generate access tokens
     access_token = create_access_token(user_id=str(user.id))
 
     response = JSONResponse(

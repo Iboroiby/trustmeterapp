@@ -32,4 +32,4 @@ if __name__ == "__main__":
         "description": "This is a test product",
         "price": 9.99,
     }
-    create_product(db, sample_data)
+    # create_product(db, sample_data)
