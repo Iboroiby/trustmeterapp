@@ -37,3 +37,14 @@ class RegisteredUserResponse(BaseModel):
 class LoginUserInput(BaseModel):
     email: EmailStr
     password: str
+
+class PasswordResetRequestInput(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetInput(BaseModel):
+    token: str
+    password: Annotated[
+        str, StringConstraints(min_length=4, max_length=64, strip_whitespace=True)
+    ]
+

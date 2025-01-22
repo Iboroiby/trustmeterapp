@@ -4,13 +4,15 @@ import os
 
 class Settings(BaseSettings):
     PORT: int = config("PORT", cast=int)
+    CLIENT_URL: str = config("CLIENT_URL")
+    PASSWORD_RESET_SECRET: str = config("PASSWORD_RESET_SECRET")
 
     """Database Settings"""
     DB_URL: str = config("DB_URL")
 
     """JWT Settings"""
     JWT_SECRET: str = config("JWT_SECRET")
-    JWT_ALGORITHM: str = config("JWT_ALGORITHM")
+    ALGORITHM: str = config("ALGORITHM")
 
     """Email Settings"""
     MAIL_USERNAME: str = config("MAIL_USERNAME")

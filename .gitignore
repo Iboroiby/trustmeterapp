@@ -11,3 +11,4 @@ docker-compose.yml
 db-utils.sh
 
 postgres_data/
+soup.py

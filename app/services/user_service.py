@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
-from app.schemas.user import RegisterUserInput, LoginUserInput
+from app.schemas.user import RegisterUserInput, LoginUserInput, PasswordResetInput
 from app.models.user import User
 from fastapi import HTTPException
-from app.utils.auth import hash_password, verify_password
+from app.utils.auth import hash_password, verify_password, create_password_token, verify_password_token
+from app.utils.settings import settings
 
 class UserService:
     """ User service class """
@@ -44,6 +45,39 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
         return user
     
+    def get_user_by_email(self, db: Session, email: str):
+        """Get the user by email"""
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    
+    def password_reset_token(self, db:Session, email: str):
+        """"""
+        user = self.get_user_by_email(db=db, email=email)
+        reset_token = create_password_token(user_email=user.email)
+        user.password_reset_token = reset_token
+        db.commit()
+        db.refresh(user)
+        reset_link = settings.CLIENT_URL + f"/reset-password/{reset_token}"
+        return {
+            "reset_link": reset_link,
+            "name": user.name,
+            "email": user.email
+        }
+    
+    def reset_password(self, db: Session, schema: PasswordResetInput):
+        """"""
+        user = verify_password_token(schema.token, db)
+        hashed_password = hash_password(password=schema.password)
+        user.password = hashed_password
+        user.password_reset_token = None
+        db.commit()
+        db.refresh(user)
+        return {
+            "name": user.name,
+            "email": user.email
+        }
     
         
 
