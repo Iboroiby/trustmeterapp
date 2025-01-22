@@ -13,6 +13,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    settings.CLIENT_URL,
 ]
 
 app.add_middleware(
@@ -90,4 +91,4 @@ async def exception(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=settings.PORT)
+    uvicorn.run(app, host="0.0.0.0", port=settings.PORT or 8001)
